@@ -19,6 +19,10 @@
 #define p_stepper_step 4      //D
 #define p_stepper_dir  2      //D
 
+#define ir_threshold 512
+#define p_first_ir A0
+#define p_second_ir A0
+
 #define bluetooth Serial
 
 Servo servo;
@@ -41,6 +45,8 @@ int stepperDelay = 500;
 long lastStepTaken = 0;
 long lastStepPosSent = 0;
 boolean lastStepWrite = false;
+
+void handleSpeedTest();
 
 void handleStepper() {
     int delta = targetStepperPos - currentStepperPos;
@@ -75,6 +81,39 @@ void handleStepper() {
     }
 }
 
+bool firstDetect = false;
+bool lastDetect = false;
+unsigned long firstDetectMilis = 0;
+
+void handleSpeedTest() {
+    int first = analogRead(p_first_ir);
+    int second = analogRead(p_second_ir);
+    unsigned long time = millis();
+
+    if (first < ir_threshold) {
+        if (!firstDetect) {
+            firstDetect = true;
+            firstDetectMilis = time;
+        }
+    } else {
+        firstDetect = false;
+    }
+
+    if (second < ir_threshold) {
+        if (!lastDetect) {
+            lastDetect = true;
+            auto delta = (int) (time - firstDetectMilis);
+
+            bluetooth.write(MSG_SPEED);
+            bluetooth.write(delta);
+            bluetooth.write(delta >> 8u);
+        }
+        else {
+            lastDetect = false;
+        }
+    }
+}
+
 void loop() {
     while (bluetooth.available() >= 7) {
         int lm = bluetooth.read();
@@ -93,4 +132,5 @@ void loop() {
         bluetooth.write(0);
     }
     handleStepper();
+    handleSpeedTest();
 }
