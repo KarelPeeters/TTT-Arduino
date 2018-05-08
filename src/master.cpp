@@ -21,14 +21,14 @@
 
 #define ir_threshold 512
 #define p_first_ir A0
-#define p_second_ir A0
+#define p_second_ir A1
 
 #define bluetooth Serial
 
 Servo servo;
 
 void setup() {
-    Serial.begin(9600);
+    bluetooth.begin(9600);
 
     pinMode(p_left_motor, OUTPUT);
     pinMode(p_right_motor, OUTPUT);
@@ -108,9 +108,8 @@ void handleSpeedTest() {
             bluetooth.write(delta);
             bluetooth.write(delta >> 8u);
         }
-        else {
-            lastDetect = false;
-        }
+    } else {
+        lastDetect = false;
     }
 }
 
@@ -126,10 +125,6 @@ void loop() {
         analogWrite(p_left_motor, lm);
         analogWrite(p_right_motor, rm);
         servo.write(serv);
-
-        bluetooth.write(MSG_SPEED);
-        bluetooth.write(lm);
-        bluetooth.write(0);
     }
     handleStepper();
     handleSpeedTest();
