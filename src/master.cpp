@@ -1,12 +1,3 @@
-/*                    Servo     Servo2     ServoTimer2      PWMServo
- * SoftwareSerial       59         59           59              59
- * AltSoftSerial        59         59           59              59
- * NeoSWSerial          59         59           59              5
- */
-
-#define LOGBT
-//#define LOGSTEP
-
 #include <Arduino.h>
 #include <Servo.h>
 
