@@ -6,7 +6,8 @@
 
 #define p_left_motor   6      //D pwm
 #define p_right_motor  5      //D pwm
-#define p_servo        8
+#define p_servo_hor    8
+#define p_servo_ver    7
 #define p_stepper_step 4      //D
 #define p_stepper_dir  2      //D
 
@@ -16,23 +17,26 @@
 
 #define bluetooth Serial
 
-Servo servo;
+Servo servo_hor;
+Servo servo_ver;
 
 void setup() {
     bluetooth.begin(9600);
 
     pinMode(p_left_motor, OUTPUT);
     pinMode(p_right_motor, OUTPUT);
-    pinMode(p_servo, OUTPUT);
+    pinMode(p_servo_hor, OUTPUT);
+    pinMode(p_servo_ver, OUTPUT);
     pinMode(p_stepper_step, OUTPUT);
     pinMode(p_stepper_dir, OUTPUT);
 
-    servo.attach(p_servo);
+    servo_hor.attach(p_servo_hor);
+    servo_ver.attach(p_servo_ver);
 }
 
-int currentStepperPos = 300;
-int targetStepperPos = 300;
-int stepperDelay = 500;
+int currentStepperPos = 0;
+int targetStepperPos = 0;
+int stepperDelay = 4000;
 long lastStepTaken = 0;
 long lastStepPosSent = 0;
 boolean lastStepWrite = false;
@@ -105,17 +109,19 @@ void handleSpeedTest() {
 }
 
 void loop() {
-    while (bluetooth.available() >= 7) {
+    while (bluetooth.available() >= 8) {
         int lm = bluetooth.read();
         int rm = bluetooth.read();
-        int serv = bluetooth.read();
+        int serv_hor = bluetooth.read();
+        int serv_ver = bluetooth.read();
 
         stepperDelay = bluetooth.read() + (((uint16_t) bluetooth.read()) << 8u);
         targetStepperPos = bluetooth.read() + ((uint16_t ) (bluetooth.read()) << 8u);
 
         analogWrite(p_left_motor, lm);
         analogWrite(p_right_motor, rm);
-        servo.write(serv);
+        servo_hor.write(serv_hor);
+        servo_ver.write(serv_ver);
     }
     handleStepper();
     handleSpeedTest();
